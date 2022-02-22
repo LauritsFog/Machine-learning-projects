@@ -16,7 +16,7 @@ addpath(genpath('Data'));
 % Reading the csv. file into a table. 
 FF_table = readtable('Alg_FFire-data.csv');
 
-%%
+%% Principal component analysis: 
 
 % Not considering date and class for the SVD. 
 A = table2array(FF_table(:,5:14));
