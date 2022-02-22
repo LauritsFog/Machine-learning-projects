@@ -27,28 +27,17 @@ A(166,:) = [];
 % Subtracting the mean. 
 A = A - mean(A);
 
-% Computing the SVD. 
 [U,S,V] = svd(A);
-
-% Extracting diagonal elements from S. 
-sigmas = diag(S);
 
 explainedVar = zeros(1,10);
 
-% Computing explained variance for each principle component. 
 for i = 1:10
-    explainedVar(i) = sigmas(i)^2/sum(sigmas.^2);
+    explainedVar(i) = S(i,i)/sum(sum(S)); 
 end
 
 explainedVarCum = zeros(1,10);
 
-% Computing cumulative explained variance for each principle component. 
-
 for i = 1:10
-    explainedVarCum(i) = sum(sigmas(1:i).^2)/sum(sigmas.^2); 
+    explainedVarCum(i) = sum(S(1:/sum(sum(S)); 
 end
-
-%%
-
-plot(explainedVarCum*100);
 
