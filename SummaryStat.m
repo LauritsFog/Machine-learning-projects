@@ -46,21 +46,14 @@ tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat'];
 
 %% Correlation and similarity
 
+X = [Temp,RH,Ws,Rain,FWI];
 
+% Giver correlations matrix 
+corr(X);
 
-corrcoef(Temp,RH); % -0.654
-corrcoef(Temp,Ws); % -0.2781
-corrcoef(Temp,Rain); % -0.3268
-corrcoef(Temp,FWI); % 0.5668
-
-corrcoef(RH,Ws); % 0.2361
-corrcoef(RH,Rain); % 0.223
-corrcoef(RH,FWI); % -0.5805
-
-corrcoef(Ws,Rain); % 0.17
-corrcoef(Ws,FWI); % 0.034 - Virkelig ingen correlation
-
-corrcoef(Rain,FWI); % -0.3248
+% giver plot af correlationerne.
+VN = {'Temp','RH','Ws','Rain','FWI'};
+corrplot(X,'varNames',VN)
 
 
 % Summary:
@@ -69,8 +62,6 @@ corrcoef(Rain,FWI); % -0.3248
 
 % Furthermore the Fire Weather Index also seems to be correltet a little
 % with Temperature and Relativ humidity
-
-
 
 
 
