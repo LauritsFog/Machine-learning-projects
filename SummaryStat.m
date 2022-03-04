@@ -9,6 +9,11 @@ file_path = fullfile(cdir,'/Data/Alg_FFire-data.csv');
 %Data folder for more information.
 FF_table = readtable(file_path);
 
+% For at skifte til den korrekte path
+% cd '/Users/frederiknagel/Desktop/GitHub/GitHub'
+% Virker nok kun på min computer
+
+
 
                 %% Basic Summary statistics of the attributes
 
@@ -20,6 +25,8 @@ RH = table2array(FF_table(:,6));
 Ws = table2array(FF_table(:,7));
 Rain = table2array(FF_table(:,8));
 FWI = table2array(FF_table(:,14));
+FFMC = table2array(FF_table(:,9));
+DC = table2array(FF_table(:,11));
 
 FWI(166) = 10.4;
 
@@ -35,6 +42,8 @@ RH_stat = [mean(RH),std(RH),median(RH),range(RH)];
 Ws_stat = [mean(Ws),std(Ws),median(Ws),range(Ws)];
 Rain_stat = [mean(Rain),std(Rain),median(Rain),range(Rain)];
 FWI_stat = [mean(FWI),std(FWI),median(FWI),range(FWI)];
+FFMC_stat = [mean(FFMC),std(FFMC),median(FFMC),range(FFMC)];
+DC_stat = [mean(DC),std(DC),median(DC),range(DC)];
 
 % Range = difference between max and min
 
@@ -42,17 +51,19 @@ FWI_stat = [mean(FWI),std(FWI),median(FWI),range(FWI)];
 
 %Col=[Temperature, Relativ humidity, wind speed, rain, fire weather index]
 %rows=[Mean,std,Median,range]
-tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat'];
+tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat',FFMC_stat',DC_stat'];
+
 
 %% Correlation and similarity
 
-X = [Temp,RH,Ws,Rain,FWI];
+X = [Temp,RH,Ws,Rain,FWI,FFMC,DC];
 
 % Giver correlations matrix 
-corr(X);
+corr(X)
 
 % giver plot af correlationerne.
-VN = {'Temp','RH','Ws','Rain','FWI'};
+figure(1)
+VN = {'Temp','RH','Ws','Rain','FWI','FFMC','DC'};
 corrplot(X,'varNames',VN)
 
 
@@ -62,6 +73,46 @@ corrplot(X,'varNames',VN)
 
 % Furthermore the Fire Weather Index also seems to be correltet a little
 % with Temperature and Relativ humidity
+
+
+%% Boxplot 
+
+figure(2)
+boxplot(X)
+
+
+%% Scatter
+
+x = [1:244];
+
+figure(3)
+subplot(3,3,1)
+scatter(x,Temp)
+title('Temperature')
+
+subplot(3,3,2)
+scatter(x,RH)
+title('Relative Humidity')
+
+subplot(3,3,3)
+scatter(x,Ws)
+title('Wind speed')
+
+subplot(3,3,4)
+scatter(x,Rain)
+title('Rain')
+
+subplot(3,3,5)
+scatter(x,FWI)
+title('Fire Weather Index')
+
+subplot(3,3,6)
+scatter(x,FFMC)
+title('Fine Fuel Moisture Code index')
+
+subplot(3,3,7)
+scatter(x,DC)
+title('Drought Code index')
 
 
 
