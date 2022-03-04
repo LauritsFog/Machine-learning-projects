@@ -59,7 +59,7 @@ tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat',FFMC_stat',DC_stat
 X = [Temp,RH,Ws,Rain,FWI,FFMC,DC];
 
 % Giver correlations matrix 
-corr(X)
+corr(X);
 
 % giver plot af correlationerne.
 figure(1)
@@ -83,43 +83,76 @@ boxplot(X)
 
 %% Scatter
 
+% Skiller ved ID 123
+% Fra 1 - 122  Bejaia
+% Fra 123 til 244  Sidi Bel-abbes
+
+
 x = [1:244];
 
 figure(3)
+title('Plot af Data')
+
 subplot(3,3,1)
-scatter(x,Temp)
+hold on
+scatter(x(1:122),Temp(1:122),'blue')
+scatter(x(1:122),Temp(123:244),'red')
+hold off
 title('Temperature')
 
 subplot(3,3,2)
-scatter(x,RH)
+hold on
+scatter(x(1:122),RH(1:122),'blue')
+scatter(x(1:122),RH(123:244),'red')
+hold off
 title('Relative Humidity')
 
 subplot(3,3,3)
-scatter(x,Ws)
+hold on
+scatter(x(1:122),Ws(1:122),'blue')
+scatter(x(1:122),Ws(123:244),'red')
+hold off
 title('Wind speed')
 
 subplot(3,3,4)
-scatter(x,Rain)
+hold on
+scatter(x(1:122),Rain(1:122),'blue')
+scatter(x(1:122),Rain(123:244),'red')
+hold off
 title('Rain')
 
 subplot(3,3,5)
-scatter(x,FWI)
+hold on
+scatter(x(1:122),FWI(1:122),'blue')
+scatter(x(1:122),FWI(123:244),'red')
+hold off
 title('Fire Weather Index')
 
 subplot(3,3,6)
-scatter(x,FFMC)
+hold on
+scatter(x(1:122),FFMC(1:122),'blue')
+scatter(x(1:122),FFMC(123:244),'red')
+hold off
 title('Fine Fuel Moisture Code index')
 
 subplot(3,3,7)
-scatter(x,DC)
+hold on
+scatter(x(1:122),DC(1:122),'blue')
+scatter(x(1:122),DC(123:244),'red')
+hold off
 title('Drought Code index')
 
+% Construct a Legend with the data from the sub-plots
+hL = legend({'Bejaia Region', 'Sidi Bel-abbes Region'},'FontSize',14);
+% Programatically move the Legend
+newPosition = [0.5 0.1 0.3 0.1];
+newUnits = 'normalized';
+set(hL,'Position', newPosition,'Units', newUnits);
 
 
+%% Correlation for all attributes
 
-
-
-
-
-
+Xfull = table2array(FF_table(:,5:14));
+VN = {'Temp','RH','Ws','Rain','FFMC','DMC','DC','ISI','BUI','FWI'};
+corrplot(Xfull,'varNames',VN)
 
