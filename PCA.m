@@ -19,16 +19,16 @@ A(166,:) = [];
 class = table2array(FF_table(:,15));
 class(166) = [];
 
-% Subtracting the mean. 
-A = A - mean(A);
+% Normalizing our data. 
+Anormalized = (A - mean(A))./std(A);
 
 % Computing the SVD. 
-[U,S,V] = svd(A);
+[U,S,V] = svd(Anormalized);
 
 % Computing the explained variance.  
 rho = diag(S).^2./sum(diag(S).^2);
 
-threshold = 0.95;
+threshold = 0.90;
 
 %%
 
@@ -42,11 +42,12 @@ legend({'Individual','Cumulative','Threshold'},'Location','best');
 %%
 
 figure(2);
-gscatter(A(:,1),A(:,2),class);
+gscatter(Anormalized(:,1),Anormalized(:,2),class);
 
 %%
 
 Z = U*S;
+proj = (V'*Anormalized')';
 
 %%
 
@@ -55,17 +56,24 @@ gscatter(Z(:,1),Z(:,2),class);
 
 %%
 
-pcs = 1:2;
+% The same as figure(3). 
 
 figure(4);
-bar(V(:,1:2));
+gscatter(proj(:,1),proj(:,2),class);
+
+%%
+
+pcs = 1:4;
+
+figure(5);
+bar(V(:,1:4));
 legendCell = cellstr(num2str(pcs', 'PC%-d'));
 legend(legendCell, 'location','best');
 set(gca,'xticklabel',attributeNames);
 
 %%
 
-figure(5);
+figure(6);
 z = zeros(1,size(V,2))';
 quiver(z,z,V(:,1), V(:,2), 1,'Color', 'k','AutoScale','off','LineWidth', .1);
 hold on
