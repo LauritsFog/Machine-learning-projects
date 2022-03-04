@@ -9,6 +9,11 @@ file_path = fullfile(cdir,'/Data/Alg_FFire-data.csv');
 %Data folder for more information.
 FF_table = readtable(file_path);
 
+% For at skifte til den korrekte path
+% cd '/Users/frederiknagel/Desktop/GitHub/GitHub'
+% Virker nok kun på min computer
+
+
 
                 %% Basic Summary statistics of the attributes
 
@@ -20,6 +25,8 @@ RH = table2array(FF_table(:,6));
 Ws = table2array(FF_table(:,7));
 Rain = table2array(FF_table(:,8));
 FWI = table2array(FF_table(:,14));
+FFMC = table2array(FF_table(:,9));
+DC = table2array(FF_table(:,11));
 
 FWI(166) = 10.4;
 
@@ -35,6 +42,8 @@ RH_stat = [mean(RH),std(RH),median(RH),range(RH)];
 Ws_stat = [mean(Ws),std(Ws),median(Ws),range(Ws)];
 Rain_stat = [mean(Rain),std(Rain),median(Rain),range(Rain)];
 FWI_stat = [mean(FWI),std(FWI),median(FWI),range(FWI)];
+FFMC_stat = [mean(FFMC),std(FFMC),median(FFMC),range(FFMC)];
+DC_stat = [mean(DC),std(DC),median(DC),range(DC)];
 
 % Range = difference between max and min
 
@@ -42,17 +51,19 @@ FWI_stat = [mean(FWI),std(FWI),median(FWI),range(FWI)];
 
 %Col=[Temperature, Relativ humidity, wind speed, rain, fire weather index]
 %rows=[Mean,std,Median,range]
-tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat'];
+tabel_stat=[Temp_stat',RH_stat',Ws_stat',Rain_stat',FWI_stat',FFMC_stat',DC_stat'];
+
 
 %% Correlation and similarity
 
-X = [Temp,RH,Ws,Rain,FWI];
+X = [Temp,RH,Ws,Rain,FWI,FFMC,DC];
 
 % Giver correlations matrix 
 corr(X);
 
 % giver plot af correlationerne.
-VN = {'Temp','RH','Ws','Rain','FWI'};
+figure(1)
+VN = {'Temp','RH','Ws','Rain','FWI','FFMC','DC'};
 corrplot(X,'varNames',VN)
 
 
@@ -64,11 +75,84 @@ corrplot(X,'varNames',VN)
 % with Temperature and Relativ humidity
 
 
+%% Boxplot 
+
+figure(2)
+boxplot(X)
 
 
+%% Scatter
+
+% Skiller ved ID 123
+% Fra 1 - 122  Bejaia
+% Fra 123 til 244  Sidi Bel-abbes
 
 
+x = [1:244];
+
+figure(3)
+title('Plot af Data')
+
+subplot(3,3,1)
+hold on
+scatter(x(1:122),Temp(1:122),'blue')
+scatter(x(1:122),Temp(123:244),'red')
+hold off
+title('Temperature')
+
+subplot(3,3,2)
+hold on
+scatter(x(1:122),RH(1:122),'blue')
+scatter(x(1:122),RH(123:244),'red')
+hold off
+title('Relative Humidity')
+
+subplot(3,3,3)
+hold on
+scatter(x(1:122),Ws(1:122),'blue')
+scatter(x(1:122),Ws(123:244),'red')
+hold off
+title('Wind speed')
+
+subplot(3,3,4)
+hold on
+scatter(x(1:122),Rain(1:122),'blue')
+scatter(x(1:122),Rain(123:244),'red')
+hold off
+title('Rain')
+
+subplot(3,3,5)
+hold on
+scatter(x(1:122),FWI(1:122),'blue')
+scatter(x(1:122),FWI(123:244),'red')
+hold off
+title('Fire Weather Index')
+
+subplot(3,3,6)
+hold on
+scatter(x(1:122),FFMC(1:122),'blue')
+scatter(x(1:122),FFMC(123:244),'red')
+hold off
+title('Fine Fuel Moisture Code index')
+
+subplot(3,3,7)
+hold on
+scatter(x(1:122),DC(1:122),'blue')
+scatter(x(1:122),DC(123:244),'red')
+hold off
+title('Drought Code index')
+
+% Construct a Legend with the data from the sub-plots
+hL = legend({'Bejaia Region', 'Sidi Bel-abbes Region'},'FontSize',14);
+% Programatically move the Legend
+newPosition = [0.5 0.1 0.3 0.1];
+newUnits = 'normalized';
+set(hL,'Position', newPosition,'Units', newUnits);
 
 
+%% Correlation for all attributes
 
+Xfull = table2array(FF_table(:,5:14));
+VN = {'Temp','RH','Ws','Rain','FFMC','DMC','DC','ISI','BUI','FWI'};
+corrplot(Xfull,'varNames',VN)
 
