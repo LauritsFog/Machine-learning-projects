@@ -33,17 +33,6 @@ plot(y, y_est, '.');
 xlabel('Temp (true)');
 ylabel('Temp (estimated)');
 
-
-
-
-
-
-
-
-
-
-
-
 %% Regularized Linear regression 
 % include an additional attribute corresponding to the offset
 X=[ones(size(Xr_norm,1),1) Xr_norm];
