@@ -26,22 +26,23 @@ yTest = Y(1:floor(length(Y)/3),:);
 
 %%
 
-% Number of hidden layers.
-
-Nh = 6;
-
-results = nr_main(xTrain,yTrain,xTest,yTest,Nh);
-
-%%
-
-% Plot the error
 figure(1)
-x_axis = 0:length(results.mse_test)-1;
-plot(x_axis,results.mse_test,'r*-',x_axis,results.mse_train,'bo-')
-xlabel('Number of hyperparameter updates')
-ylabel('Mean square error')
-legend('Test set','Training set')
 
+for N = 1:10
+    
+    results = nr_main(xTrain,yTrain,xTest,yTest,N);
+
+    % Plot the error
+    
+    subplot(5,2,N)
+    x_axis = 0:length(results.mse_test)-1;
+    plot(x_axis,results.mse_test,'r*-',x_axis,results.mse_train,'bo-')
+    xlabel('Number of hyperparameter updates')
+    ylabel('Mean square error')
+    legend('Test set','Training set')
+
+end
+    
 %%
 
 % Plot the evolution of the hyperparameters
