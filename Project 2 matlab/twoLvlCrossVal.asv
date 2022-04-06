@@ -177,30 +177,23 @@ bar([1,2,3],[linRegEgen,ANNEgen,baselineEgen])
 
 % Display the trained network 
 mfig('Trained Network');
-k=6; % cross-validation fold
 displayNetworkRegression(netwrkOuter);
 
 %%
 
-% Plotting training errors for every rlr model for each fold
-
 figure
-for i = 1:K
-    % subplot(5,2,i)
-    semilogx(lambda_tmp,Error_train2(:,i))
-    hold on
-end
+plot([1:10],Error_train_rlr,'-o','Color','b')
+hold on
+plot([1:10],Error_test_rlr,'-o','Color','r')
+hold off
 
 %%
 
-% Plotting training errors for every ANN model for each fold
-
 figure
-for i = 1:K
-    % subplot(5,2,i)
-    plot(NHiddenUnits,Error_train2_ANN(:,i))
-    hold on
-end
+plot([1:10],Error_train_ANN,'-o','Color','b')
+hold on
+plot([1:10],Error_test_ANN,'-o','Color','r')
+hold off
 
 %%
 
@@ -224,23 +217,33 @@ end
 
 %%
 
+c = cool(10);
+
 figure
 for k = 1:10
-    plot(NHiddenUnits,Error_train2_ANN(:,k),'-o','Color','blue')
+    subplot(2,1,1)
+    plot(NHiddenUnits,Error_train2_ANN(:,k),'-o','Color',c(k,:))
     hold on
-    plot(NHiddenUnits,Error_test2_ANN(:,k),'-o','Color','red')
+    subplot(2,1,2)
+    plot(NHiddenUnits,Error_test2_ANN(:,k),'-o','Color',c(k,:))
+    hold on
 end
-legend('Training error','Test error')
+hold off
 
 %%
 
+c = cool(10);
+
 figure
 for k = 1:K
-    semilogx(lambda_tmp,Error_train2(:,k),'-o','Color','blue')
+    subplot(2,1,1)
+    semilogx(lambda_tmp,lineRegEgens(:,k),'-o','Color',c(k,:))
     hold on
-    semilogx(lambda_tmp,Error_test2(:,k),'-o','Color','red')
+    subplot(2,1,2)
+    semilogx(lambda_tmp,lineRegEgens(:,k),'-o','Color',c(k,:))
+    hold on
 end
-legend('Training error','Test error')
+hold off
 
 
 
