@@ -25,10 +25,9 @@ attributeNames={'Offset', attributeNames{1:end}};
 K = 10;
 CV = cvpartition(N, 'Kfold', K);
 
-% Values of lambda
-lambda_tmp=linspace(0.001,100,14);
+% Initializing for RLR
+lambda_tmp=[0:14];
 
-% Initialize variables
 T=length(lambda_tmp);
 Error_train_rlr = nan(K,1);
 Error_test_rlr = nan(K,1);
@@ -45,7 +44,10 @@ w_noreg = nan(M,K);
 Error_train_gen_rlr = zeros(K,T);
 Error_test_gen_rlr = zeros(K,T);
 
-NHiddenUnits = [1:3];
+% Initializing for ANN
+
+NHiddenUnits = [1:10];
+
 Error_train_ANN = nan(K,1);
 Error_test_ANN = nan(K,1);
 Error_train2_ANN = nan(length(NHiddenUnits),K);
@@ -54,6 +56,11 @@ bestnet=cell(K,1);
 h_opt = nan(K,1);
 Error_train_gen_ANN = zeros(K,length(NHiddenUnits));
 Error_test_gen_ANN = zeros(K,length(NHiddenUnits));
+
+ANN_test_est = cell(K,1);
+RLR_test_est = cell(K,1);
+Baseline_test_est = cell(K,1);
+y_true = cell(K,1);
 
 % For each crossvalidation fold
 for k = 1:K
@@ -64,6 +71,7 @@ for k = 1:K
     y_train = y(CV.training(k));
     X_test = X(CV.test(k), :);
     y_test = y(CV.test(k));
+    y_true{k,1} = y_test;
 
     % Use 10-fold crossvalidation to estimate optimal value of lambda    
     KK = 10;
@@ -118,15 +126,6 @@ for k = 1:K
     Error_test_gen_rlr(k,:) = sum(Error_test2,2)/sum(CV2.TestSize);
     Error_train_gen_rlr(k,:) = sum(Error_train2,2)/sum(CV2.TrainSize);
     
-%     for s = 1:length(NHiddenUnits)
-%         Error_test_gen_ANN(k,s) = Error_test2_ANN(s,:)*CV2.TestSize'/CV.TrainSize(k);
-%         Error_train_gen_ANN(k,s) = Error_train2_ANN(s,:)*CV2.TrainSize'/CV.TrainSize(k);
-%     end
-%     for s = 1:length(lambda_tmp)
-%         Error_test_gen_rlr(k,s) = Error_test2(s,:)*CV2.TestSize'/CV.TrainSize(k);
-%         Error_train_gen_rlr(k,s) = Error_train2(s,:)*CV2.TrainSize'/CV.TrainSize(k);
-%     end
-    
     % Training and testing 
     
     [val_ANN,ind_opt_ANN]=min(sum(Error_test2_ANN,2)/sum(CV2.TestSize));
@@ -135,7 +134,8 @@ for k = 1:K
     netwrkOuter = nr_main(X_train(:,2:end), y_train, X_test(:,2:end), y_test, NHiddenUnits(ind_opt_ANN));
     
     y_train_est = netwrkOuter.t_pred_train;    
-    y_test_est = netwrkOuter.t_pred_test;        
+    y_test_est = netwrkOuter.t_pred_test;
+    ANN_test_est{k,1} = y_test_est;
 
     % Compute least squares error
     Error_train_ANN(k) = sum((y_train-y_train_est).^2)/CV.TrainSize(k);
@@ -165,10 +165,12 @@ for k = 1:K
     % lambda
     Error_train_rlr(k) = sum((y_train-X_train_std*w_rlr(:,k)).^2)/CV.TrainSize(k);
     Error_test_rlr(k) = sum((y_test-X_test_std*w_rlr(:,k)).^2)/CV.TestSize(k);
+    RLR_test_est{k,1} = X_test_std*w_rlr(:,k);
     
     % Compute squared error without using the input data at all
     Error_train_nofeatures(k) = sum((y_train-mean(y_train)).^2)/CV.TrainSize(k);
     Error_test_nofeatures(k) = sum((y_test-mean(y_train)).^2)/CV.TestSize(k);
+    Baseline_test_est{k,1} = ones(sum(CV.test(k)),1)*mean(y_train);
 end
 
 %%
@@ -178,6 +180,110 @@ end
 linRegEgen = sum(CV.TestSize*Error_test_rlr/N);
 ANNEgen = sum(CV.TestSize*Error_test_ANN/N);
 baselineEgen = sum(CV.TestSize*Error_test_nofeatures/N);
+
+%%
+
+% Significance value
+alpha = 0.05;
+
+% Comparing ANN with RLR
+
+zA = (cell2mat(y_true)-cell2mat(ANN_test_est)).^2;
+zB = (cell2mat(y_true)-cell2mat(RLR_test_est)).^2;
+
+z_hat_1 = (1/N)*sum(zA-zB);
+
+[~, p_ANN_RLR, CI_ANN_RLR] = ttest(zA-zB, [], 'alpha', alpha);
+
+[~, ~, CIANN] = ttest(zA, [], 'alpha', alpha);
+[~, ~, CIRLR] = ttest(zB, [], 'alpha', alpha);
+
+% Comparing ANN with baseline
+
+zA = (cell2mat(y_true)-cell2mat(ANN_test_est)).^2;
+zB = (cell2mat(y_true)-cell2mat(Baseline_test_est)).^2;
+
+z_hat_2 = (1/N)*sum(zA-zB);
+
+[~, p_ANN_Baseline, CI_ANN_Baseline] = ttest(zA-zB, [], 'alpha', alpha);
+
+[~, ~, CIBaseline] = ttest(zB, [], 'alpha', alpha);
+
+% Comparing RLR with baseline
+
+zA = (cell2mat(y_true)-cell2mat(RLR_test_est)).^2;
+zB = (cell2mat(y_true)-cell2mat(Baseline_test_est)).^2;
+
+z_hat_3 = (1/N)*sum(zA-zB);
+
+[~, p_RLR_Baseline, CI_RLR_Baseline] = ttest(zA-zB, [], 'alpha', alpha);
+
+%%
+
+figure
+p = plot(1,linRegEgen,'o',1,CIRLR(1),'*',1,CIRLR(2),'*',2,ANNEgen,'o',2,CIANN(1),'*',2,CIANN(2),'*',3,baselineEgen,'o',3,CIBaseline(1),'*',3,CIBaseline(2),'*');
+
+p(1).MarkerSize = 10;
+p(4).MarkerSize = 10;
+p(7).MarkerSize = 10;
+
+p(1).MarkerFaceColor = 'b';
+p(4).MarkerFaceColor = 'b';
+p(7).MarkerFaceColor = 'b';
+
+p(1).Color = 'b';
+p(4).Color = 'b';
+p(7).Color = 'b';
+
+p(2).Color = 'r';
+p(3).Color = 'r';
+p(5).Color = 'r';
+p(6).Color = 'r';
+p(8).Color = 'r';
+p(9).Color = 'r';
+
+p(2).MarkerSize = 10;
+p(3).MarkerSize = 10;
+p(5).MarkerSize = 10;
+p(6).MarkerSize = 10;
+p(8).MarkerSize = 10;
+p(9).MarkerSize = 10;
+
+grid on
+
+set(gca, 'XTickLabel',{' ','RLR',' ','ANN',' ','Baseline',' '},'Fontsize',15)
+
+legend('Generelization error', 'Confidence interval')
+
+xlim([0.5 3.5])
+
+%%
+
+c = cool(3);
+
+figure
+for i = 10:10
+    plot(y(CV.test(i)),'-o','Color','r')
+    hold on
+    plot(RLR_test_est{i},'-o','Color',c(1,:))
+    hold on
+    plot(ANN_test_est{i},'-o','Color',c(2,:))
+    hold on
+    plot(Baseline_test_est{i},'-o','Color',c(3,:))
+    hold on
+end
+legend('True values', 'RLR predictions', 'ANN predictions','Baseline predictions','Location','northwest')
+
+%%
+
+zhats = [z_hat_1;z_hat_2;z_hat_3];
+P = [p_ANN_RLR;p_ANN_Baseline;p_RLR_Baseline];
+CI_lower = [CI_ANN_RLR(1);CI_ANN_Baseline(1);CI_RLR_Baseline(1)];
+CI_upper = [CI_ANN_RLR(2);CI_ANN_Baseline(2);CI_RLR_Baseline(2)];
+
+table(zhats,CI_lower,CI_upper,P)
+
+ttest = [zhats CI_lower CI_upper P];
 
 %%
 
@@ -200,6 +306,7 @@ plot([1:10],Error_train_rlr,'-o','Color','b')
 hold on
 plot([1:10],Error_test_rlr,'-o','Color','r')
 legend('Training errors','Testing errors','Fontsize',15)
+title('Errors with optimal lambda','Fontsize',15)
 grid on
 hold off
 
@@ -210,6 +317,7 @@ plot([1:10],Error_train_ANN,'-o','Color','b')
 hold on
 plot([1:10],Error_test_ANN,'-o','Color','r')
 legend('Training errors','Testing errors','Fontsize',15)
+title('Errors with optimal h','Fontsize',15)
 grid on
 hold off
 
@@ -218,7 +326,7 @@ hold off
 c = cool(10);
 
 figure
-for k = 1:10
+for k = 1:1
     subplot(2,1,1)
     plot(NHiddenUnits,Error_test_gen_ANN(k,:),'-o','Color',c(k,:))
     title('Testing errors','Fontsize',15)
@@ -240,16 +348,25 @@ figure
 for k = 1:10
     subplot(2,1,1)
     plot(lambda_tmp,Error_test_gen_rlr(k,:),'-o','Color',c(k,:))
+    xlim([0 lambda_tmp(end)])
     title('Testing errors','Fontsize',15)
     grid on
     hold on
     subplot(2,1,2)
     plot(lambda_tmp,Error_train_gen_rlr(k,:),'-o','Color',c(k,:))
+    xlim([0 lambda_tmp(end)])
     title('Training errors','Fontsize',15)
     grid on
     hold on
 end
 hold off
 
+%%
 
+figure
+plot(lambda_tmp,Error_test_gen_rlr(k,:),'-o','Color','r')
+hold on
+plot(lambda_tmp,Error_train_gen_rlr(k,:),'-o','Color','b')
+legend
+legend('Testing errors','Training errors','Fontsize',15)
 
