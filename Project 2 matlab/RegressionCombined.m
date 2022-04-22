@@ -4,7 +4,7 @@ A_Names=FF_table.Properties.VariableNames;
 arr_FF_table=table2array(FF_table(:,1:14));
 y = arr_FF_table(:, 5);%Temp
 Xr = arr_FF_table(:, [6,7,8]);%Humidity, wind,rain
-%% Regression, part a
+%% Regression, part a 
 
 %% 1
 %Regression of temperature using humidity, rain, wind
